@@ -81,7 +81,9 @@ function RegisterCtrl($scope,registerApi){
 	  if($event.target.id == -1){
 		personLoggedIn();
 	  } else {
-		refreshItems($event.target);
+		 if ($scope.personLoggedIn != "No One") {
+			refreshItems($event.target);
+		  }
 	  }
     // registerApi.clickButton($event.target.id)
       //  .success(refreshItems($event.target.id))
@@ -188,7 +190,7 @@ function RegisterCtrl($scope,registerApi){
 	refreshButtons();  //make sure the buttons are loaded
   	refreshUsers();  //make sure the users are loaded
 	totalCost();  //make sure the total cost is initialized
-
+	personLoggedIn();
 }
 
 function registerApi($http,apiUrl){
