@@ -20,6 +20,7 @@ function RegisterCtrl($scope,registerApi){
    $scope.firstname="";
    $scope.lastname="";
    $scope.finalCost=0;
+   $scope.addNewUser=addNewUser;
    $scope.receiptNumber=1;
 
    var loading = false;
@@ -42,34 +43,48 @@ function RegisterCtrl($scope,registerApi){
   }
  
   //gets the list of cashiers from the database
-  function refreshUsers(){
-    loading=true;
-    $scope.errorMessage='';
-    registerApi.getUsers()
-      .success(function(data){
-         $scope.users=data;
-         loading=false;
-      })
-      .error(function () {
-          $scope.errorMessage="Unable to load Users:  Database request failed";
-          loading=false;
-      });
-  }
+//  function refreshUsers(){
+//    loading=true;
+//    $scope.errorMessage='';
+//    registerApi.getUsers()
+//      .success(function(data){
+//         $scope.users=data;
+//         loading=false;
+//      })
+//      .error(function () {
+//          $scope.errorMessage="Unable to load Users:  Database request failed";
+//          loading=false;
+//      });
+//  }
  
   //checks credentials against the list of allowed users to let 
   function personLoggedIn() {
 	$scope.errorMessage='';
-	  refreshUsers();
+	  loading = true;
 	  var loggedIn = false; 
-	for (usernames in $scope.users)
-	  {
-		if ($scope.users[usernames].Firstname == $scope.firstname && $scope.users[usernames].Lastname == $scope.lastname)
-		  {
-			$scope.personLoggedIn = $scope.firstname + " " + $scope.lastname;
-			  loggedIn = true;
-		  }
-	  }
 
+	registerApi.logIn($scope.username, $scope.password)
+	  .success(function(data){
+		if(data.length == 1){
+			$scope.personLoggedIn = $scope.username;
+			loggedIn = true;
+			loading = false;
+		}
+	  })
+	  .error(function(){
+		$scope.errorMessage="error loading users: Database request failed";
+		  loading = false;
+	  });
+
+//	for (usernames in $scope.users)
+//	  {
+//		if ($scope.users[usernames].Firstname == $scope.username && $scope.users[usernames].Lastname == $scope.password)
+//		  {
+//			$scope.personLoggedIn = $scope.firstname + " " + $scope.lastname;
+//			  loggedIn = true;
+//		  }
+//	  }
+//
 	  if(!loggedIn){
 		$scope.personLoggedIn = "No One";
 	  }
@@ -80,6 +95,8 @@ function RegisterCtrl($scope,registerApi){
      $scope.errorMessage='';
 	  if($event.target.id == -1){
 		personLoggedIn();
+	  } else if ($event.target.id == -2){
+		addNewUser();
 	  } else {
 		 if ($scope.personLoggedIn != "No One") {
 			refreshItems($event.target);
@@ -88,6 +105,29 @@ function RegisterCtrl($scope,registerApi){
     // registerApi.clickButton($event.target.id)
       //  .success(refreshItems($event.target.id))
         //.error(function(){$scope.errorMessage="Unable to click";});
+  }
+  function addNewUser(){
+	  $scope.errorMessage='';
+	  loading = true;
+
+	registerApi.checkName($scope.username)
+          .success(function(data){
+                if(data.length == 0){
+			registerApi.addNewUser($scope.username, $scope.password)
+				.success(function(){
+					loading = false;
+				})
+				.error(function(){
+					$scope.errorMessage="error loading users: Database request failed - couldn't add user";
+					loading=false;
+				});
+                }
+          })
+          .error(function(){
+
+                $scope.errorMessage="error loading users: Database request failed - couldn't check username";
+                  loading = false;
+          });
   }
   //updates the order by adding new items if needed, or updating the quantity of existing items
   function refreshItems(target){ 
@@ -188,7 +228,7 @@ function RegisterCtrl($scope,registerApi){
   }
   
 	refreshButtons();  //make sure the buttons are loaded
-  	refreshUsers();  //make sure the users are loaded
+ // 	refreshUsers();  //make sure the users are loaded
 	totalCost();  //make sure the total cost is initialized
 	personLoggedIn();
 }
@@ -211,6 +251,18 @@ function registerApi($http,apiUrl){
 	  {
 		var url = apiUrl + '/update?invID='+invID+'&quantity='+quantity+'&receiptNumber='+receiptNumber;
 		return $http.get(url);
+	  },
+	  logIn: function(username, password) {
+		var url = apiUrl + '/login?username='+username+'&password='+password;
+		return $http.get(url);
+	  },
+	  checkName: function(username) {
+		var url = apiUrl + '/checkName?username='+username;
+		  return $http.get(url);
+	  },
+	  addNewUser: function(username, password){
+		var url = apiUrl + '/addNewUser?username='+username+'&password='+password;
+                return $http.get(url);
 	  }
  };
 }

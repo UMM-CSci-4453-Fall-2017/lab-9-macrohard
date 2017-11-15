@@ -43,16 +43,16 @@ app.get("/buttons",function(req,res){
 //		}]);
 //});
 // Your other API handlers go here!
-app.get("/user",function(req,res){
-	var userID = req.param('userID');
-	var sql = 'SELECT * FROM XaiMarsh.Lab8_User';
-	connection.query(sql,(function(res){return function(err,rows,fields){
-		if(err){console.log("We have an error:");
-			console.log(err);}
-		res.send(rows);
-	}})(res));
-
-});
+//app.get("/user",function(req,res){
+//	var userID = req.param('userID');
+//	var sql = 'SELECT * FROM XaiMarsh.Lab8_User';
+//	connection.query(sql,(function(res){return function(err,rows,fields){
+//		if(err){console.log("We have an error:");
+//			console.log(err);}
+//		res.send(rows);
+//	}})(res));
+//
+//});
 app.get("/update",function(req,res){
 	var invID = req.param('invID');
 	var quantity = req.param('quantity');
@@ -89,4 +89,59 @@ app.get("/update",function(req,res){
 		}
 	]);
 });
+app.get("/login", function(req, res) {
+	var username = req.param('username');
+	var password = req.param('password');
+	var sql = 'select userID from XaiMarsh.till_users where Username="'+username+'" and Password="'+password+'"';
+
+	async.series([
+		function(callback) {
+			connection.query(sql,(function(res){return function(err, rows, fields) {
+				if(err){console.log("We have an error:");
+                                        console.log(err);
+					res.send(err)}
+				else{
+                                res.send(rows);
+                                callback();
+				}
+			}})(res));
+		}
+	]);
+});
+app.get("/checkName", function(req, res) {
+	var username = req.param('username');
+	var sql = 'select userID from XaiMarsh.till_users where Username="'+username+'"';
+
+async.series([
+                function(callback) {
+                        connection.query(sql,(function(res){return function(err, rows, fields) {
+                                if(err){console.log("We have an error:");
+                                        console.log(err);
+                                       res.send(err)}
+                                else{
+                                res.send(rows);
+                                callback();
+                                }
+                        }})(res));
+                }
+        ]);
+});
+app.get("/addNewUser", function(req, res) {
+        var username = req.param('username');
+	var password = req.param('password');
+        var sql = 'insert into XaiMarsh.till_users values(0, "'+username+'", "'+password+'")';
+
+        async.series([
+                function(callback){
+                        connection.query(sql, (function(res){return function(err,rows,fields){
+                                if(err){console.log("we have an error:");
+                                        console.log(err);
+                                        res.send(err)} else {
+                                                callback();
+                                        }
+                        }})(res));
+                }
+        ]);
+});
+
 app.listen(port);
