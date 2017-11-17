@@ -22,6 +22,7 @@ function RegisterCtrl($scope,registerApi){
    $scope.finalCost=0;
    $scope.addNewUser=addNewUser;
    $scope.receiptNumber=1;
+   $scope.logOut=logOut;
 
    var loading = false;
 
@@ -86,8 +87,11 @@ function RegisterCtrl($scope,registerApi){
 //	  }
 //
 	  if(!loggedIn){
-		$scope.personLoggedIn = "No One";
+		$scope.personLoggedIn = "Please Log In";
 	  }
+  }
+  function logOut() {
+	$scope.personLoggedIn = "Please Log In";
   }
 
 	//if a button is clicked that isn't a special case, it will perform it's intended action
@@ -98,7 +102,7 @@ function RegisterCtrl($scope,registerApi){
 	  } else if ($event.target.id == -2){
 		addNewUser();
 	  } else {
-		 if ($scope.personLoggedIn != "No One") {
+		 if ($scope.personLoggedIn != "Please Log In") {
 			refreshItems($event.target);
 		  }
 	  }
@@ -137,6 +141,7 @@ function RegisterCtrl($scope,registerApi){
 	  for(items in $scope.order){
 		if(target.id == $scope.order[items].invID){
 			$scope.order[items].quantity++;
+			$scope.order[items].lastTime = Date.now();
 			alreadyHasItem = true;
 
 		}
@@ -154,7 +159,7 @@ function RegisterCtrl($scope,registerApi){
 
 
 	  if(!alreadyHasItem){
-		  $scope.order.push({"buttonID":$scope.orderID,"invID":target.id,"quantity":1,"prices":newItemPrice,"label":newItemLabel,"top":(($scope.order.length)*50)+150})
+		  $scope.order.push({"buttonID":$scope.orderID,"invID":target.id,"quantity":1,"prices":newItemPrice,"label":newItemLabel,"top":(($scope.order.length)*50)+150,"firstTime":Date.now(),"lastTime":Date.now()})
 		  $scope.orderID++;
 	  }
    	  totalCost(); 
@@ -203,10 +208,12 @@ function RegisterCtrl($scope,registerApi){
   function completeTransaction() {
 
 	  var didsomething = false;
+	  var buttonPushed = Date.now();
+	$scope.receiptNumber=(Date.now() + Math.floor(Math.random() * 1000000));
 	for (item in $scope.order)
 	  {
 		  didsomething = true;
-		registerApi.updateInventory($scope.order[item].invID, $scope.order[item].quantity,$scope.receiptNumber)
+		registerApi.updateInventory($scope.order[item].invID, $scope.order[item].quantity,$scope.receiptNumber, $scope.personLoggedIn, $scope.order[item].firstTime, $scope.order[item].lastTime)
 			.success(function(data){
  	
       			})
@@ -216,7 +223,7 @@ function RegisterCtrl($scope,registerApi){
 
 	  }
 	  if(didsomething){
-		$scope.receiptNumber++;
+		registerApi.updateInventory(-1, -1, $scope.receiptNumber, $scope.personLoggedIn, buttonPushed, buttonPushed);
 	  	voidTransaction();
 	  }
   }
@@ -247,9 +254,9 @@ function registerApi($http,apiUrl){
       var url = apiUrl + '/user';
       return $http.get(url);
     },
-    updateInventory: function(invID, quantity, receiptNumber)
+    updateInventory: function(invID, quantity, receiptNumber, user, firstTime, lastTime)
 	  {
-		var url = apiUrl + '/update?invID='+invID+'&quantity='+quantity+'&receiptNumber='+receiptNumber;
+		var url = apiUrl + '/update?invID='+invID+'&quantity='+quantity+'&receiptNumber='+receiptNumber+'&user='+user+'&firstTime='+firstTime+'&lastTime='+lastTime;
 		return $http.get(url);
 	  },
 	  logIn: function(username, password) {
