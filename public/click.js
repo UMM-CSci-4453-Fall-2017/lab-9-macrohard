@@ -29,6 +29,7 @@ function RegisterCtrl($scope,registerApi){
    function isLoading(){
     return loading;
    }
+
   function refreshButtons(){
     loading=true;
     $scope.errorMessage='';
@@ -43,20 +44,6 @@ function RegisterCtrl($scope,registerApi){
       });
   }
  
-  //gets the list of cashiers from the database
-//  function refreshUsers(){
-//    loading=true;
-//    $scope.errorMessage='';
-//    registerApi.getUsers()
-//      .success(function(data){
-//         $scope.users=data;
-//         loading=false;
-//      })
-//      .error(function () {
-//          $scope.errorMessage="Unable to load Users:  Database request failed";
-//          loading=false;
-//      });
-//  }
  
   //checks credentials against the list of allowed users to let 
   function personLoggedIn() {
@@ -77,19 +64,11 @@ function RegisterCtrl($scope,registerApi){
 		  loading = false;
 	  });
 
-//	for (usernames in $scope.users)
-//	  {
-//		if ($scope.users[usernames].Firstname == $scope.username && $scope.users[usernames].Lastname == $scope.password)
-//		  {
-//			$scope.personLoggedIn = $scope.firstname + " " + $scope.lastname;
-//			  loggedIn = true;
-//		  }
-//	  }
-//
 	  if(!loggedIn){
 		$scope.personLoggedIn = "Please Log In";
 	  }
   }
+
   function logOut() {
 	$scope.personLoggedIn = "Please Log In";
   }
@@ -99,17 +78,15 @@ function RegisterCtrl($scope,registerApi){
      $scope.errorMessage='';
 	  if($event.target.id == -1){
 		personLoggedIn();
-	  } else if ($event.target.id == -2){
+	  } else if ($event.target.id == -2 && $scope.personLoggedIn != "Please Log In"){
 		addNewUser();
 	  } else {
 		 if ($scope.personLoggedIn != "Please Log In") {
 			refreshItems($event.target);
 		  }
 	  }
-    // registerApi.clickButton($event.target.id)
-      //  .success(refreshItems($event.target.id))
-        //.error(function(){$scope.errorMessage="Unable to click";});
   }
+
   function addNewUser(){
 	  $scope.errorMessage='';
 	  loading = true;
@@ -133,6 +110,7 @@ function RegisterCtrl($scope,registerApi){
                   loading = false;
           });
   }
+
   //updates the order by adding new items if needed, or updating the quantity of existing items
   function refreshItems(target){ 
  	$scope.errorMessage='';
@@ -164,6 +142,7 @@ function RegisterCtrl($scope,registerApi){
 	  }
    	  totalCost(); 
   }
+
 	//calculates the total cost and formats it to 2 decimal places
   function totalCost(){
 	  var cost = 0;
@@ -178,9 +157,7 @@ function RegisterCtrl($scope,registerApi){
 	$scope.totalCost = cost.toFixed(2);
 
   }
-  function itemCost(){
-	//not implemented
-  }
+
 	//removes an item if it's button is clicked in the current transaction area
   function removePurchase($event){
 
@@ -205,6 +182,7 @@ function RegisterCtrl($scope,registerApi){
 	  }
   	totalCost();
   }
+
 	//completes the transaction and sends its relevant information to the database (updating till_inventory's amount and adding rows to till_sales)
   function completeTransaction() {
 
@@ -233,12 +211,14 @@ function RegisterCtrl($scope,registerApi){
 		  voidTransaction();
 	  }
   }
+
 	//voids the current transaction
   function voidTransaction() {
 	$scope.order = [];
 	  $scope.orderID = 0;
 	  totalCost();
   }
+
   function receiptPopup() {
 	var itemHolder = [];
 	var tempItem = "";
@@ -251,7 +231,6 @@ function RegisterCtrl($scope,registerApi){
 	  alert(itemHolder.join("\n"));
   }
 	refreshButtons();  //make sure the buttons are loaded
- // 	refreshUsers();  //make sure the users are loaded
 	totalCost();  //make sure the total cost is initialized
 	personLoggedIn();
 }
