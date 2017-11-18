@@ -60,6 +60,7 @@ app.get("/update",function(req,res){
 	var user = req.param('user');
 	var firstTime = req.param('firstTime');
 	var lastTime = req.param('lastTime');
+	var finalCost = req.param('finalCost');
 	var sql = 'insert into XaiMarsh.till_sales values('+receiptNumber+', '+invID+', '+quantity+', '+firstTime+', '+lastTime+')';
 	var newQuantity = 0;
 	if(invID != -1){
@@ -93,17 +94,18 @@ app.get("/update",function(req,res){
 	]);
 	} else {
 		async.series([
-		function(callback){
-                        sql = 'insert into XaiMarsh.user_sales values('+receiptNumber+', "'+user+'")';
-                        connection.query(sql, function(err,row,fields){
-                                if (err) {console.log("We have an error:");
-                                        console.log(err);}
-                                callback();
-                        });
-
-                },
+	//	function(callback){
+         //               sql = 'insert into XaiMarsh.user_sales values('+receiptNumber+', "'+user+'",'+firstTime+', '+lastTime+')';
+          //              connection.query(sql, function(err,row,fields){
+        //                        if (err) {console.log("We have an error:");
+      //                                  console.log(err);}
+    //                            callback();
+  //                      });
+//
+       //         },
                 function(callback){
-                        sql = 'insert into XaiMarsh.till_sales values('+receiptNumber+', '+invID+', '+quantity+', '+firstTime+', '+lastTime+')';
+            //            sql = 'insert into XaiMarsh.till_sales values('+receiptNumber+', '+invID+', '+quantity+')';
+			sql = 'insert into XaiMarsh.user_sales values('+receiptNumber+', "'+user+'",'+firstTime+', '+lastTime+', '+finalCost+')';
                         connection.query(sql, (function(res){return function(err,rows,fields){
                                 if(err){console.log("We have an error:");
                                         console.log(err);}

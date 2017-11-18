@@ -174,6 +174,7 @@ function RegisterCtrl($scope,registerApi){
 			}
 		}
 	}
+	$scope.finalCost = cost.toFixed(2);
 	$scope.totalCost = cost.toFixed(2);
 
   }
@@ -207,13 +208,17 @@ function RegisterCtrl($scope,registerApi){
 	//completes the transaction and sends its relevant information to the database (updating till_inventory's amount and adding rows to till_sales)
   function completeTransaction() {
 
+	  var firstButton = $scope.order[0].firstTime;
 	  var didsomething = false;
 	  var buttonPushed = Date.now();
 	$scope.receiptNumber=(Date.now() + Math.floor(Math.random() * 1000000));
 	for (item in $scope.order)
 	  {
 		  didsomething = true;
-		registerApi.updateInventory($scope.order[item].invID, $scope.order[item].quantity,$scope.receiptNumber, $scope.personLoggedIn, $scope.order[item].firstTime, $scope.order[item].lastTime)
+		  if($scope.order[item].firstTime < firstButton){
+			firstButton = $scope.order[item].firstTime;
+		  }
+		registerApi.updateInventory($scope.order[item].invID, $scope.order[item].quantity,$scope.receiptNumber, $scope.personLoggedIn, $scope.order[item].firstTime, $scope.order[item].lastTime, $scope.finalCost)
 			.success(function(data){
  	
       			})
@@ -223,8 +228,9 @@ function RegisterCtrl($scope,registerApi){
 
 	  }
 	  if(didsomething){
-		registerApi.updateInventory(-1, -1, $scope.receiptNumber, $scope.personLoggedIn, buttonPushed, buttonPushed);
-	  	voidTransaction();
+		registerApi.updateInventory(-1, -1, $scope.receiptNumber, $scope.personLoggedIn, firstButton, buttonPushed, $scope.finalCost);
+	  	receiptPopup();
+		  voidTransaction();
 	  }
   }
 	//voids the current transaction
@@ -233,7 +239,17 @@ function RegisterCtrl($scope,registerApi){
 	  $scope.orderID = 0;
 	  totalCost();
   }
-  
+  function receiptPopup() {
+	var itemHolder = [];
+	var tempItem = "";
+
+	  for(item in $scope.order){
+		tempItem = $scope.order[item].label+'\t-\t'+$scope.order[item].quantity;
+		  itemHolder[item] = tempItem;
+	  }
+	  itemHolder[itemHolder.length+1] = "Total Cost: $"+$scope.finalCost;
+	  alert(itemHolder.join("\n"));
+  }
 	refreshButtons();  //make sure the buttons are loaded
  // 	refreshUsers();  //make sure the users are loaded
 	totalCost();  //make sure the total cost is initialized
@@ -254,9 +270,9 @@ function registerApi($http,apiUrl){
       var url = apiUrl + '/user';
       return $http.get(url);
     },
-    updateInventory: function(invID, quantity, receiptNumber, user, firstTime, lastTime)
+    updateInventory: function(invID, quantity, receiptNumber, user, firstTime, lastTime, finalCost)
 	  {
-		var url = apiUrl + '/update?invID='+invID+'&quantity='+quantity+'&receiptNumber='+receiptNumber+'&user='+user+'&firstTime='+firstTime+'&lastTime='+lastTime;
+		var url = apiUrl + '/update?invID='+invID+'&quantity='+quantity+'&receiptNumber='+receiptNumber+'&user='+user+'&firstTime='+firstTime+'&lastTime='+lastTime+'&finalCost='+finalCost;
 		return $http.get(url);
 	  },
 	  logIn: function(username, password) {
