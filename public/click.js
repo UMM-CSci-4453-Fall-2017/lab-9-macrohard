@@ -241,14 +241,6 @@ function registerApi($http,apiUrl){
       var url = apiUrl + '/buttons';
       return $http.get(url);
     },
-    clickButton: function(id){
-      var url = apiUrl+'/click?id='+id;
-      return $http.post(url); // Easy enough to do this way
-    },
-    getUsers: function(){
-      var url = apiUrl + '/user';
-      return $http.get(url);
-    },
     updateInventory: function(invID, quantity, receiptNumber, user, firstTime, lastTime, finalCost)
 	  {
 		var url = apiUrl + '/update?invID='+invID+'&quantity='+quantity+'&receiptNumber='+receiptNumber+'&user='+user+'&firstTime='+firstTime+'&lastTime='+lastTime+'&finalCost='+finalCost;
